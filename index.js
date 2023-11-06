@@ -95,8 +95,17 @@ async function run() {
       res.clearCookie("token", { maxAge: 0 }).send({ success: true });
     });
 
+    // read: get all foods
     app.get("/", async (req, res) => {
       const result = await foodsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // read: get single food
+    app.get("/food/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await foodsCollection.findOne(query);
       res.send(result);
     });
     ///////////////////////////////////////////////
