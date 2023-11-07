@@ -69,6 +69,10 @@ async function run() {
       .db("foodHubDB")
       .collection("foodsCollection");
 
+    const foodRequestCollection = client
+      .db("foodHubDB")
+      .collection("foodRequestCollection");
+
     // jwt auth api
     app.post("/jwt", async (req, res) => {
       const user = req.body;
@@ -106,6 +110,13 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await foodsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // create: create request data and save in database
+    app.post("/requestCollection", async (req, res) => {
+      const data = req.body;
+      const result = await foodRequestCollection.insertOne(data);
       res.send(result);
     });
     ///////////////////////////////////////////////
