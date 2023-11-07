@@ -105,9 +105,15 @@ async function run() {
       res.send(result);
     });
 
+    // create: insert food in food collection
+    app.post('/', async(req, res)=> {
+      const data = req.body;
+      const result = await foodsCollection.insertOne(data);
+      res.send(result)
+    })
+
     // read: get single food
     app.get("/food/:id", async (req, res) => {
-      const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await foodsCollection.findOne(query);
       res.send(result);
