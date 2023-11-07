@@ -106,16 +106,30 @@ async function run() {
     });
 
     // create: insert food in food collection
-    app.post('/', async(req, res)=> {
+    app.post("/", async (req, res) => {
       const data = req.body;
       const result = await foodsCollection.insertOne(data);
-      res.send(result)
-    })
+      res.send(result);
+    });
 
     // read: get single food
     app.get("/food/:id", async (req, res) => {
+      const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await foodsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // read: filter added food by current user
+    app.get("/added_Food", async (req, res) => {
+      console.log("REQUEST EMAIL QUERY", req.query.email);
+      let query = {};
+      if (req.query.email) {
+        query = {
+          donarEmail: req.query.email,
+        };
+      }
+      const result = await foodsCollection.find(query).toArray();
       res.send(result);
     });
 
