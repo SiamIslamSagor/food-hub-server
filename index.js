@@ -157,6 +157,14 @@ async function run() {
       res.send(result);
     });
 
+    // delete: to delete a single food in database
+    app.delete("/delete_food/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await foodsCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // create: create request data and save in database
     app.post("/requestCollection", async (req, res) => {
       const data = req.body;
