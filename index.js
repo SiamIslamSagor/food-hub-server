@@ -181,6 +181,24 @@ async function run() {
       const result = await foodRequestCollection.find(query).toArray();
       res.send(result);
     });
+
+    // update: to update food status
+    app.patch("/food_status/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedFood = {
+        $set: {
+          foodStatus: "Delivered",
+        },
+      };
+      const result = await foodRequestCollection.updateOne(
+        filter,
+        updatedFood,
+        options
+      );
+      res.send(result);
+    });
     ///////////////////////////////////////////////
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
