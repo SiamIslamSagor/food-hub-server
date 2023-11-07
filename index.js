@@ -133,6 +133,30 @@ async function run() {
       res.send(result);
     });
 
+    // update: update food info in database
+    app.patch("/update_food/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedData = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedFood = {
+        $set: {
+          foodImg: updatedData.foodImg,
+          foodName: updatedData.foodName,
+          foodQuantity: updatedData.foodQuantity,
+          expiredDate: updatedData.expiredDate,
+          additionalNotes: updatedData.additionalNotes,
+          pickupLocation: updatedData.pickupLocation,
+        },
+      };
+      const result = await foodsCollection.updateOne(
+        filter,
+        updatedFood,
+        options
+      );
+      res.send(result);
+    });
+
     // create: create request data and save in database
     app.post("/requestCollection", async (req, res) => {
       const data = req.body;
