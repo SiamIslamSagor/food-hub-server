@@ -120,6 +120,8 @@ async function run() {
       res.send(result);
     });
 
+    // delete: to delete single food form foodsCollection
+
     // read: filter added food by current user
     app.get("/added_Food", async (req, res) => {
       console.log("REQUEST EMAIL QUERY", req.query.email);
@@ -169,6 +171,14 @@ async function run() {
     app.post("/requestCollection", async (req, res) => {
       const data = req.body;
       const result = await foodRequestCollection.insertOne(data);
+      res.send(result);
+    });
+
+    // read: to read single request food in database
+    app.get("/requested_food/:id", async (req, res) => {
+      const requestedFoodId = req.params.id;
+      const query = { id: requestedFoodId };
+      const result = await foodRequestCollection.find(query).toArray();
       res.send(result);
     });
     ///////////////////////////////////////////////
