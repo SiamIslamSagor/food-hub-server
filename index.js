@@ -73,6 +73,10 @@ async function run() {
       .db("foodHubDB")
       .collection("foodRequestCollection");
 
+    const addedFoodsCollection = client
+      .db("foodHubDB")
+      .collection("addedFoodsCollection");
+
     // jwt auth api
     app.post("/jwt", async (req, res) => {
       const user = req.body;
@@ -105,24 +109,31 @@ async function run() {
       res.send(result);
     });
 
-    // create: insert food in food collection
-    app.post("/", async (req, res) => {
+    // create: insert food in added foods collection
+    app.post("/added_foods", async (req, res) => {
+      const data = req.body;
+      const result = await addedFoodsCollection.insertOne(data);
+      res.send(result);
+    });
+
+    // create: insert food in  foods collection
+    app.post("/available_foods/add", async (req, res) => {
       const data = req.body;
       const result = await foodsCollection.insertOne(data);
       res.send(result);
     });
 
     // read: get single food
-    app.get("/food/:id", async (req, res) => {
+    app.get("/added_food_find/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result = await foodsCollection.findOne(query);
+      const result = await addedFoodsCollection.findOne(query);
       res.send(result);
     });
 
     // delete: to delete single food form foodsCollection
 
-    // read: filter added food by current user
+    // read: filter added food by current user in added foods collection
     app.get("/added_Food", async (req, res) => {
       console.log("REQUEST EMAIL QUERY", req.query.email);
       let query = {};
@@ -131,11 +142,11 @@ async function run() {
           donarEmail: req.query.email,
         };
       }
-      const result = await foodsCollection.find(query).toArray();
+      const result = await addedFoodsCollection.find(query).toArray();
       res.send(result);
     });
 
-    // update: update food info in database
+    // update: update food info in database added food collection
     app.patch("/update_food/:id", async (req, res) => {
       const id = req.params.id;
       const updatedData = req.body;
@@ -151,7 +162,7 @@ async function run() {
           pickupLocation: updatedData.pickupLocation,
         },
       };
-      const result = await foodsCollection.updateOne(
+      const result = await addedFoodsCollection.updateOne(
         filter,
         updatedFood,
         options
@@ -159,10 +170,46 @@ async function run() {
       res.send(result);
     });
 
+    // update: update food info in database added food collection
+    app.patch(
+      "/update_food_in_foodsCollection/:hexString",
+      async (req, res) => {
+        const updatedHexString = req.params.hexString;
+        const updatedData = req.body;
+        const filter = { hexString: updatedHexString };
+        const options = { upsert: true };
+        const updatedFood = {
+          $set: {
+            foodImg: updatedData.foodImg,
+            foodName: updatedData.foodName,
+            foodQuantity: updatedData.foodQuantity,
+            expiredDate: updatedData.expiredDate,
+            additionalNotes: updatedData.additionalNotes,
+            pickupLocation: updatedData.pickupLocation,
+          },
+        };
+        const result = await foodsCollection.updateOne(
+          filter,
+          updatedFood,
+          options
+        );
+        res.send(result);
+      }
+    );
+
     // delete: to delete a single food in database
     app.delete("/delete_food/:id", async (req, res) => {
       const id = req.params.id;
+      console.log("DELET THIS ID", id);
       const query = { _id: new ObjectId(id) };
+      const result = await addedFoodsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // delete: delete added food form foods collection by using hexCode identifier
+    app.delete("/delete_added_food/:hexString", async (req, res) => {
+      const DeleteFoodHexString = req.params.hexString;
+      const query = { hexString: DeleteFoodHexString };
       const result = await foodsCollection.deleteOne(query);
       res.send(result);
     });
@@ -182,7 +229,7 @@ async function run() {
       res.send(result);
     });
 
-    // update: to update food status
+    // update: to update food status request collection
     app.patch("/food_status/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -193,6 +240,24 @@ async function run() {
         },
       };
       const result = await foodRequestCollection.updateOne(
+        filter,
+        updatedFood,
+        options
+      );
+      res.send(result);
+    });
+
+    // update: to update food status added foods collection
+    app.patch("/added_food_status/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedFood = {
+        $set: {
+          foodStatus: "Delivered",
+        },
+      };
+      const result = await addedFoodsCollection.updateOne(
         filter,
         updatedFood,
         options
