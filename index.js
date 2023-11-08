@@ -35,22 +35,28 @@ const client = new MongoClient(uri, {
 
 // my own created middleware:
 // //////////////////////
+const logger = async (req, res, next) => {
+  console.log("callllled: ", req.host, req.originalUrl);
+  next();
+};
 
 // token verify middleware
 const verifyToken = async (req, res, next) => {
   const token = req.cookies?.token;
+  console.log("value of token in middleware", token);
   // if token not exist , then run this codeblock
   if (!token) {
     return res.status(401).send({ message: "unauthorized access" });
   }
-
   //  if token exist then , verify the token in this code block
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
     // if token have any problem, then run this codeblock
     if (error) {
+      console.log(error);
       return res.status(401).send({ message: "unauthorized access" });
     }
     // if token have no problem, then run this codeblock
+    console.log("value in the token in decode:++++>", decoded);
     req.user = decoded;
     next();
   });
@@ -141,8 +147,14 @@ async function run() {
     // delete: to delete single food form foodsCollection
 
     // read: filter added food by current user in added foods collection
-    app.get("/added_Food", async (req, res) => {
+    app.get("/added_Food", verifyToken, async (req, res) => {
       console.log("REQUEST EMAIL QUERY", req.query.email);
+      console.log("VALUE OF DECODED TOKEN===:::>>", req.user);
+      /////////////////////////
+      if (req.query.email !== req.user.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      /////////////////////////
       let query = {};
       if (req.query.email) {
         query = {
@@ -265,8 +277,15 @@ async function run() {
 
     //////////////////////////////
     // read: filter added food by current user in added foods collection
-    app.get("/my_all_request", async (req, res) => {
+    app.get("/my_all_request", verifyToken, logger, async (req, res) => {
       console.log("REQUEST EMAIL QUERY", req.query.email);
+      console.log("VALUE OF DECODED TOKEN===:::>>", req.user);
+      /////////////////////////
+      if (req.query.email !== req.user.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      /////////////////////////
+
       let query = {};
       if (req.query.email) {
         query = {
