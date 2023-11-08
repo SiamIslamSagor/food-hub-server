@@ -10,7 +10,10 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "https://food-hub-6f2e6.web.app",
+      "https://food-hub-6f2e6.firebaseapp.com",
+    ],
     credentials: true,
   })
 );
@@ -105,8 +108,10 @@ async function run() {
     // when called the api , then clear the cookie
     app.post("/logout", async (req, res) => {
       const user = req.body;
-      console.log("LOGGING OUT=>>>>>", user);
-      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+      console.log("logging out", user);
+      res
+        .clearCookie("token", { maxAge: 0, sameSite: "none", secure: true })
+        .send({ success: true });
     });
 
     // read: get all foods
