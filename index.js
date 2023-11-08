@@ -263,6 +263,20 @@ async function run() {
       res.send(result);
     });
 
+    //////////////////////////////
+    // read: filter added food by current user in added foods collection
+    app.get("/my_all_request", async (req, res) => {
+      console.log("REQUEST EMAIL QUERY", req.query.email);
+      let query = {};
+      if (req.query.email) {
+        query = {
+          requesterEmail: req.query.email,
+        };
+      }
+      const result = await foodRequestCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // update: to update food status request collection
     app.patch("/food_status/:id", async (req, res) => {
       const id = req.params.id;
@@ -278,6 +292,14 @@ async function run() {
         updatedFood,
         options
       );
+      res.send(result);
+    });
+
+    ///////
+    app.delete("/delete_request/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await foodRequestCollection.deleteOne(query);
       res.send(result);
     });
 
