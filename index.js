@@ -123,6 +123,13 @@ async function run() {
       res.send(result);
     });
 
+    // create: insert food in  foods request collection
+    app.post("/requestCollection", async (req, res) => {
+      const data = req.body;
+      const result = await foodRequestCollection.insertOne(data);
+      res.send(result);
+    });
+
     // read: get single food
     app.get("/added_food_find/:id", async (req, res) => {
       const id = req.params.id;
@@ -143,6 +150,22 @@ async function run() {
         };
       }
       const result = await addedFoodsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // read: find single food in added food
+    app.get("/get_added_Food/:id", async (req, res) => {
+      const manageFoodId = req.params.id;
+      const query = { _id: new ObjectId(manageFoodId) };
+      const result = await addedFoodsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // read: find single food in foodsCollection
+    app.get("/get_food/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await foodsCollection.findOne(query);
       res.send(result);
     });
 
@@ -196,8 +219,10 @@ async function run() {
         res.send(result);
       }
     );
-
-    // delete: to delete a single food in database
+    ///////////////////////////////////==
+    // delete api
+    ///////////////////////////////////===
+    // delete: to delete a single food in database added foods collection
     app.delete("/delete_food/:id", async (req, res) => {
       const id = req.params.id;
       console.log("DELET THIS ID", id);
@@ -205,7 +230,8 @@ async function run() {
       const result = await addedFoodsCollection.deleteOne(query);
       res.send(result);
     });
-
+    ///////////////////////////////////==
+    ///////////////////////////////////===
     // delete: delete added food form foods collection by using hexCode identifier
     app.delete("/delete_added_food/:hexString", async (req, res) => {
       const DeleteFoodHexString = req.params.hexString;
@@ -224,7 +250,15 @@ async function run() {
     // read: to read single request food in database
     app.get("/requested_food/:id", async (req, res) => {
       const requestedFoodId = req.params.id;
-      const query = { id: requestedFoodId };
+      const query = { _id: new ObjectId(requestedFoodId) };
+      const result = await addedFoodsCollection.findOne(query);
+      res.send(result);
+    });
+    /////////////////////////////
+    // read: to read specific food all request in database
+    app.get("/get_requested_people/:hexString", async (req, res) => {
+      const requestedFoodHexString = req.params.hexString;
+      const query = { hexString: requestedFoodHexString };
       const result = await foodRequestCollection.find(query).toArray();
       res.send(result);
     });
@@ -247,21 +281,32 @@ async function run() {
       res.send(result);
     });
 
-    // update: to update food status added foods collection
-    app.patch("/added_food_status/:id", async (req, res) => {
+    //////////////////////////////
+    app.patch(
+      "/change_status_added_foodCollection/:hexString",
+      async (req, res) => {
+        const requestedHexString = req.params.hexString;
+        const filter = { hexString: requestedHexString };
+        const options = { upsert: true };
+        const updatedFood = {
+          $set: {
+            foodStatus: "Delivered",
+          },
+        };
+        const result = await addedFoodsCollection.updateOne(
+          filter,
+          updatedFood,
+          options
+        );
+        res.send(result);
+      }
+    );
+
+    // Delete: to update food status added foods collection
+    app.delete("/delete_food_in_foodCollection/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const options = { upsert: true };
-      const updatedFood = {
-        $set: {
-          foodStatus: "Delivered",
-        },
-      };
-      const result = await addedFoodsCollection.updateOne(
-        filter,
-        updatedFood,
-        options
-      );
+      const query = { _id: new ObjectId(id) };
+      const result = await foodsCollection.deleteOne(query);
       res.send(result);
     });
     ///////////////////////////////////////////////
